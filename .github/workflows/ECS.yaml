@@ -44,7 +44,9 @@ jobs:
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+        outputs:
+          image: ${{ steps.build-image.outputs.image }}
 
       - name: Update ECS Task Definition with New Image
         id: task-def
@@ -64,4 +66,6 @@ jobs:
           # timeout: 600  # Uncomment and adjust if needed to handle long stabilization times
 
       - name: Verify Deployment Status
-        run: echo "Deployment successful. Verify the service in the AWS ECS console."
+        run: |
+          echo "✅ Deployment successful!"
+          echo "🔗 View your ECS service: https://${{ env.AWS_REGION }}.console.aws.amazon.com/ecs/home?region=${{ env.AWS_REGION }}#/clusters/${{ env.ECS_CLUSTER }}/services/${{ env.ECS_SERVICE }}/details"
