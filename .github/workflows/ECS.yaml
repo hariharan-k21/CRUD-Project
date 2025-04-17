@@ -7,7 +7,7 @@ on:
 env:
   AWS_REGION: ap-south-1
   ECR_REPOSITORY: hariharan-crud
-  ECS_SERVICE: hariharan-crud
+  ECS_SERVICE: hariharan-crud-app
   ECS_CLUSTER: hariharan-crud
   ECS_TASK_DEFINITION: hari-task-defn.json
   CONTAINER_NAME: hariharan-crud
