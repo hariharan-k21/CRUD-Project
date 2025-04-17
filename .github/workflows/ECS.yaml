@@ -1,16 +1,16 @@
-name: Deploy to Amazon ECS by Hariharan K
+name: Deploy to Amazon ECS
 
 on:
   push:
     branches: [ "main" ]
 
 env:
-  AWS_REGION: ap-south-1
-  ECR_REPOSITORY: hariharan-crud
-  ECS_SERVICE: hariharan-crud-app
-  ECS_CLUSTER: hariharan-crud
-  ECS_TASK_DEFINITION: hari-task-defn.json
-  CONTAINER_NAME: hariharan-crud
+  AWS_REGION: ap-south-1                  # Preferred AWS region
+  ECR_REPOSITORY: hariharan # Amazon ECR repository name
+  ECS_SERVICE: hariharan         # Amazon ECS service name
+  ECS_CLUSTER: hariharan          # Amazon ECS cluster name
+  ECS_TASK_DEFINITION: hari-task-defn.json # Path to task definition file
+  CONTAINER_NAME: hariharan           # Container name in task definition
 
 permissions:
   contents: read
@@ -22,50 +22,48 @@ jobs:
     environment: production
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+    - name: Checkout Repository
+      uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, Tag, and Push Docker Image to Amazon ECR
-        id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          IMAGE_URI=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "Building Docker image: $IMAGE_URI"
-          docker build -t $IMAGE_URI .
-          docker push $IMAGE_URI
-          echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
+    - name: Build, Tag, and Push Docker Image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Update ECS Task Definition with New Image
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: ${{ env.ECS_TASK_DEFINITION }}
-          container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.build-image.outputs.image }}
+    - name: Update ECS Task Definition with New Image
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: ${{ env.ECS_TASK_DEFINITION }}
+        container-name: ${{ env.CONTAINER_NAME }}
+        image: ${{ steps.build-image.outputs.image }}
 
-      - name: Deploy Updated Task Definition to Amazon ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{ env.ECS_SERVICE }}
-          cluster: ${{ env.ECS_CLUSTER }}
-          wait-for-service-stability: true
 
-      - name: Verify Deployment Status
-        run: |
-          echo "✅ Deployment successful!"
-          echo "🔗 Check your ECS service:"
-          echo "https://${{ env.AWS_REGION }}.console.aws.amazon.com/ecs/home?region=${{ env.AWS_REGION }}#/clusters/${{ env.ECS_CLUSTER }}/services/${{ env.ECS_SERVICE }}/details"
+    - name: Deploy Updated Task Definition to Amazon ECS
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: ${{ env.ECS_SERVICE }}
+        cluster: ${{ env.ECS_CLUSTER }}
+        wait-for-service-stability: true
+        #timeout: 600  Increased timeout to handle delays in stabilization
+
+    - name: Verify Deployment Status
+      run: |
+        echo "Deployment successful. Verify the service in the AWS ECS console."
