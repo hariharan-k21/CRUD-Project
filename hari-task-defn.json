@@ -7,7 +7,11 @@
             "cpu": 0,
             "portMappings": [
                 {
+<<<<<<< HEAD
                     "name": "crud-port",
+=======
+                    "name": "crud-port-80",
+>>>>>>> 067b400fb6414b240368aee995dec25c36f910ff
                     "containerPort": 80,
                     "hostPort": 80,
                     "protocol": "tcp",
