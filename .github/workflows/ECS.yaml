@@ -5,12 +5,12 @@ on:
     branches: [ "main" ]
 
 env:
-  AWS_REGION: ap-south-1                        # Preferred AWS region
-  ECR_REPOSITORY: hariharan-crud                # Amazon ECR repository name
-  ECS_SERVICE: hariharan-crud                   # Amazon ECS service name
-  ECS_CLUSTER: hariharan-crud                   # Amazon ECS cluster name
-  ECS_TASK_DEFINITION: hari-task-defn.json      # Path to task definition file
-  CONTAINER_NAME: hariharan-crud                # Container name in task definition
+  AWS_REGION: ap-south-1
+  ECR_REPOSITORY: hariharan-crud
+  ECS_SERVICE: hariharan-crud
+  ECS_CLUSTER: hariharan-crud
+  ECS_TASK_DEFINITION: hari-task-defn.json
+  CONTAINER_NAME: hariharan-crud
 
 permissions:
   contents: read
@@ -42,11 +42,11 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
-        outputs:
-          image: ${{ steps.build-image.outputs.image }}
+          IMAGE_URI=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "Building Docker image: $IMAGE_URI"
+          docker build -t $IMAGE_URI .
+          docker push $IMAGE_URI
+          echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
 
       - name: Update ECS Task Definition with New Image
         id: task-def
@@ -63,9 +63,9 @@ jobs:
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
-          # timeout: 600  # Uncomment and adjust if needed to handle long stabilization times
 
       - name: Verify Deployment Status
         run: |
           echo "✅ Deployment successful!"
-          echo "🔗 View your ECS service: https://${{ env.AWS_REGION }}.console.aws.amazon.com/ecs/home?region=${{ env.AWS_REGION }}#/clusters/${{ env.ECS_CLUSTER }}/services/${{ env.ECS_SERVICE }}/details"
+          echo "🔗 Check your ECS service:"
+          echo "https://${{ env.AWS_REGION }}.console.aws.amazon.com/ecs/home?region=${{ env.AWS_REGION }}#/clusters/${{ env.ECS_CLUSTER }}/services/${{ env.ECS_SERVICE }}/details"
