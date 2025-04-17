@@ -1,5 +1,5 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:ap-south-1:011528270926:task-definition/hariharan-crud-defn:1",
+    "taskDefinitionArn": "arn:aws:ecs:ap-south-1:011528270926:task-definition/hari-crud-defn:1",
     "containerDefinitions": [
         {
             "name": "hariharan-crud",
@@ -7,9 +7,9 @@
             "cpu": 0,
             "portMappings": [
                 {
-                    "name": "5000",
-                    "containerPort": 5000,
-                    "hostPort": 5000,
+                    "name": "crud-port",
+                    "containerPort": 80,
+                    "hostPort": 80,
                     "protocol": "tcp",
                     "appProtocol": "http"
                 }
@@ -23,7 +23,7 @@
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
-                    "awslogs-group": "/ecs/hariharan-crud-defn",
+                    "awslogs-group": "/ecs/hari-crud-defn",
                     "mode": "non-blocking",
                     "awslogs-create-group": "true",
                     "max-buffer-size": "25m",
@@ -35,7 +35,7 @@
             "systemControls": []
         }
     ],
-    "family": "hariharan-crud-defn",
+    "family": "hari-crud-defn",
     "taskRoleArn": "arn:aws:iam::011528270926:role/ecsTaskExecutionRole",
     "executionRoleArn": "arn:aws:iam::011528270926:role/ecsTaskExecutionRole",
     "networkMode": "awsvpc",
@@ -88,7 +88,7 @@
         "cpuArchitecture": "X86_64",
         "operatingSystemFamily": "LINUX"
     },
-    "registeredAt": "2025-04-17T07:50:44.483Z",
+    "registeredAt": "2025-04-17T09:18:39.954Z",
     "registeredBy": "arn:aws:iam::011528270926:user/hariharan",
     "enableFaultInjection": false,
     "tags": []
